@@ -2,7 +2,7 @@
 - name: Update Ubuntu and Install Resources on localhost
   hosts: localhost
   become: yes
-
+  become_method: sudo
   tasks:
     - name: Update APT package cache
       apt:
@@ -12,31 +12,64 @@
       apt:
         upgrade: dist
 
-    - name: Install required packages
+    - name: Install Python and packages
       apt:
         name:
+          - python3-pip
           - figlet
           - postgresql-client
           - bash
+        state: installed
 
-    - name: Create a virtual environment
+- name: Install the app
+  hosts: localhost
+  tasks:
+    - name: Clone app repository
+      git:
+        repo: 'https://github.com/menacit/virt_base_course.git'
+        dest: /home/ubuntu/lab-4/tmp/
+      copy: 
+        src: /home/ubuntu/lab-4/tmp/resources/lab/app-src
+        dest: /home/ubuntu/lab-4
+
+    - name: Clone requirements and health check
+      git:
+        repo: 'https://github.com/matsceder/virt_lab'
+        dest: /home/ubuntu/lab-4/tmp2/
+      copy: 
+        src: /home/ubuntu/lab-4/tmp2/requirements.txt
+        dest: /home/ubuntu/lab-4
+      copy: 
+        src: /home/ubuntu/lab-4/tmp2/healthcheck.sh
+        dest: /home/ubuntu/lab-4
+
+    - name: Create Python virtual environment
       command: python3 -m venv /home/ubuntu/lab-4/venv
 
-    - name: Activate the virtual environment
-      command: source /home/ubuntu/lab-4/venv/bin/activate
+    - name: Activate virtual environment and install requirements
+      command: |
+        source /home/ubuntu/lab-4/venv/bin/activate &&
+        pip install -r /home/ubuntu/lab-4/requirements.txt
+      environment:
+        VIRTUAL_ENV: /home/ubuntu/lab-4/venv
+      args:
+        executable: /bin/bash
 
-    - name: Install dependencies from requirements.txt
-      pip:
-        requirements: /home/ubuntu/lab-4/requirements.txt
-        virtualenv: /home/ubuntu/lab-4/venv
+    - name: Run Flask application in the background
+      command: |
+        source /home/ubuntu/lab-4/venv/bin/activate &&
+        export APP_TEMPLATE_PATH=/home/ubuntu/lab-4/app-src/mixologyfy.py &&
+        nohup python /home/ubuntu/lab-4/app-src/mixologyfy.py > /dev/null 2>&1 &
+      environment:
+        VIRTUAL_ENV: /home/ubuntu/lab-4/venv
+      args:
+        executable: /bin/bash
 
-    - name: Set environment variables
-      ansible.builtin.shell:
-        cmd: |
-          export FLASK_APP=app-src/mixologyfy.py
-          export FLASK_ENV=development
-          # export DATABASE_URL=postgresql://username:password@localhost:5432/yourdatabase
-          # Replace username, password, and yourdatabase with your PostgreSQL credentials
+    - name: Display installed packages in virtual environment
+      command: "{{ item }}"
+      loop:
+        - source /home/ubuntu/lab-4/venv/bin/activate && pip freeze
+      register: installed_packages_output
 
-    - name: Run the Flask app
-      command: python /home/ubuntu/lab-4/your_flask_app.py
+    - debug:
+        var: installed_packages_output.stdout_lines
