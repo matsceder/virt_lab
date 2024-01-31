@@ -19,57 +19,27 @@
           - figlet
           - postgresql-client
           - bash
-        state: installed
+          - python3-venv
 
 - name: Install the app
   hosts: localhost
   tasks:
-    - name: Clone app repository
-      git:
-        repo: 'https://github.com/menacit/virt_base_course.git'
-        dest: /home/ubuntu/lab-4/tmp/
-      copy: 
-        src: /home/ubuntu/lab-4/tmp/resources/lab/app-src
+    - name: Copy app-src
+      copy:
+        src: /tmp/repo2/resources/lab/app-src
         dest: /home/ubuntu/lab-4
 
-    - name: Clone requirements and health check
-      git:
-        repo: 'https://github.com/matsceder/virt_lab'
-        dest: /home/ubuntu/lab-4/tmp2/
-      copy: 
-        src: /home/ubuntu/lab-4/tmp2/requirements.txt
-        dest: /home/ubuntu/lab-4
-      copy: 
-        src: /home/ubuntu/lab-4/tmp2/healthcheck.sh
+    - name: Copy requirements
+      copy:
+        src: /tmp/repo/requirements.txt
         dest: /home/ubuntu/lab-4
 
-    - name: Create Python virtual environment
-      command: python3 -m venv /home/ubuntu/lab-4/venv
+    - name: Install requirements
+      command: "pip install -r /home/ubuntu/lab-4/requirements.txt"
 
-    - name: Activate virtual environment and install requirements
-      command: |
-        source /home/ubuntu/lab-4/venv/bin/activate &&
-        pip install -r /home/ubuntu/lab-4/requirements.txt
+    - name: Add environment variable & run Flask application in the background
+      command: echo 'APP_TEMPLATE_PATH=/home/ubuntu/lab-4/app-src/index.html.jinja' | sudo tee -a /etc/environment > /dev/null
+      command:  python3 /home/ubuntu/lab-4/app-src/mixologyfy.py > /dev/null 2>&1 &
       environment:
         VIRTUAL_ENV: /home/ubuntu/lab-4/venv
-      args:
-        executable: /bin/bash
 
-    - name: Run Flask application in the background
-      command: |
-        source /home/ubuntu/lab-4/venv/bin/activate &&
-        export APP_TEMPLATE_PATH=/home/ubuntu/lab-4/app-src/mixologyfy.py &&
-        nohup python /home/ubuntu/lab-4/app-src/mixologyfy.py > /dev/null 2>&1 &
-      environment:
-        VIRTUAL_ENV: /home/ubuntu/lab-4/venv
-      args:
-        executable: /bin/bash
-
-    - name: Display installed packages in virtual environment
-      command: "{{ item }}"
-      loop:
-        - source /home/ubuntu/lab-4/venv/bin/activate && pip freeze
-      register: installed_packages_output
-
-    - debug:
-        var: installed_packages_output.stdout_lines
