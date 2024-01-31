@@ -20,15 +20,15 @@
           - bash
 
     - name: Create a virtual environment
-      command: python3 -m venv ~/lab-4/venv
+      command: python3 -m venv /home/ubuntu/lab-4/venv
 
     - name: Activate the virtual environment
-      command: source ~/lab-4/venv/bin/activate
+      command: source /home/ubuntu/lab-4/venv/bin/activate
 
     - name: Install dependencies from requirements.txt
       pip:
-        requirements: ~/lab-4/requirements.txt
-        virtualenv: ~/lab-4/venv
+        requirements: /home/ubuntu/lab-4/requirements.txt
+        virtualenv: /home/ubuntu/lab-4/venv
 
     - name: Set environment variables
       ansible.builtin.shell:
@@ -39,4 +39,4 @@
           # Replace username, password, and yourdatabase with your PostgreSQL credentials
 
     - name: Run the Flask app
-      command: python ~/lab-4/your_flask_app.py
+      command: python /home/ubuntu/lab-4/your_flask_app.py
