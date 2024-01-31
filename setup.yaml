@@ -39,7 +39,7 @@
 
     - name: Add environment variable & run Flask application in the background
       command: echo 'APP_TEMPLATE_PATH=/home/ubuntu/lab-4/app-src/index.html.jinja' | sudo tee -a /etc/environment > /dev/null
-      command:  python3 /home/ubuntu/lab-4/app-src/mixologyfy.py > /dev/null 2>&1 &
+      command: setsid python3 /home/ubuntu/lab-4/app-src/mixologyfy.py > /dev/null 2>&1
       environment:
         VIRTUAL_ENV: /home/ubuntu/lab-4/venv
 
