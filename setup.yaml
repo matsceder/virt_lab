@@ -1,0 +1,42 @@
+---
+- name: Update Ubuntu and Install Resources on localhost
+  hosts: localhost
+  become: yes
+
+  tasks:
+    - name: Update APT package cache
+      apt:
+        update_cache: yes
+
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist
+
+    - name: Install required packages
+      apt:
+        name:
+          - figlet
+          - postgresql-client
+          - bash
+
+    - name: Create a virtual environment
+      command: python3 -m venv ~/lab-4/venv
+
+    - name: Activate the virtual environment
+      command: source ~/lab-4/venv/bin/activate
+
+    - name: Install dependencies from requirements.txt
+      pip:
+        requirements: ~/lab-4/requirements.txt
+        virtualenv: ~/lab-4/venv
+
+    - name: Set environment variables
+      ansible.builtin.shell:
+        cmd: |
+          export FLASK_APP=app-src/mixologyfy.py
+          export FLASK_ENV=development
+          # export DATABASE_URL=postgresql://username:password@localhost:5432/yourdatabase
+          # Replace username, password, and yourdatabase with your PostgreSQL credentials
+
+    - name: Run the Flask app
+      command: python ~/lab-4/your_flask_app.py
