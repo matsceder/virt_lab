@@ -36,8 +36,8 @@
 
     - name: Copy systemd service file
       template:
-        src: /tmp/repo/my_app.service.j2
-        dest: /etc/systemd/system/my_app.service
+        src: /tmp/repo/mixologyfy.service.j2
+        dest: /etc/systemd/system/mixologyfy.service
       notify: Reload systemd
       become: true
 
