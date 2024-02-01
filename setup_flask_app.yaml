@@ -43,7 +43,7 @@
 
     - name: Start and enable the service
       systemd:
-        name: my_app
+        name: mixologyfy
         state: started
         enabled: yes
       become: true
