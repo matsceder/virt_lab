@@ -1,0 +1,55 @@
+---
+- name: Update Ubuntu and Install Resources on localhost
+  hosts: localhost
+  gather_facts: true
+
+  vars:
+    app_dir: /home/ubuntu/lab-4
+
+  tasks:
+    - name: Update APT package cache
+      apt:
+        update_cache: yes
+
+    - name: Install Python and packages
+      apt:
+        name:
+          - figlet
+          - postgresql-client
+          - bash
+          - python3-venv
+      state: present
+
+    - name: Copy app-src from complete repo
+      copy:
+        src: /tmp/repo2/resources/lab/app-src
+        dest: "{{ app_dir }}"
+      become: true
+
+    - name: Create Python virtual environment
+      command: python3 -m venv "{{ app_dir }}/venv"
+
+    - name: Install requirements
+      pip:
+        requirements: "/tmp/repo/requirements.txt"
+        virtualenv: "{{ app_dir }}/venv"
+
+    - name: Copy systemd service file
+      template:
+        src: /tmp/repo/my_app.service.j2
+        dest: /etc/systemd/system/my_app.service
+      notify: Reload systemd
+      become: true
+
+    - name: Start and enable the service
+      systemd:
+        name: my_app
+        state: started
+        enabled: yes
+      become: true
+
+  handlers:
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+      become: true

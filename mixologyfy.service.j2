@@ -1,0 +1,11 @@
+[Unit]
+Description=My Python App
+
+[Service]
+Type=simple
+ExecStart=/home/ubuntu/lab-4/venv/bin/python /home/ubuntu/lab-4/app-src/mixologyfy.py
+Environment=VIRTUAL_ENV=/home/ubuntu/lab-4/venv
+Environment=APP_TEMPLATE_PATH=/home/ubuntu/lab-4/app-src/mixologyfy.py
+
+[Install]
+WantedBy=multi-user.target
