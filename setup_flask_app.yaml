@@ -18,7 +18,7 @@
           - postgresql-client
           - bash
           - python3-venv
-      state: present
+        state: present
 
     - name: Copy app-src from complete repo
       copy:
